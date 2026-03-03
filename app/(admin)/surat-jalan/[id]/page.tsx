@@ -28,6 +28,8 @@ export default function SuratJalanDetailPage() {
   );
   const suratJalanNumber = item?.referenceId ?? referenceId;
 
+  
+
   const getSteps = useSuratJalanDetailStore((s) => s.getSteps);
   const steps = getSteps(referenceId);
 
