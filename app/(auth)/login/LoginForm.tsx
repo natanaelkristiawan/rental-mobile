@@ -43,9 +43,6 @@ export default function LoginForm({ from }: LoginFormProps) {
       <Card className="w-full max-w-sm">
         <CardHeader>
           <CardTitle>Log in</CardTitle>
-          <CardDescription>
-            Enter your email or phone number and password.
-          </CardDescription>
         </CardHeader>
         <form onSubmit={handleSubmit}>
           <CardContent className="flex flex-col gap-4">

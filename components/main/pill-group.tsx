@@ -1,14 +1,10 @@
 "use client";
 
 import { cn } from "@/lib/utils";
+import { DASHBOARD_STATUS_TITLES } from "@/context/dashboard";
 
-const PILL_OPTIONS = [
-  "Semua",
-  "Siap kirim",
-  "Dikirim",
-  "Diterima di lokasi",
-  "Kembali ke gudang",
-] as const;
+/** "Semua" plus dashboard status titles (SIAP, KIRIM, LOKASI, CEK, OK) */
+export const PILL_OPTIONS = ["Semua", ...DASHBOARD_STATUS_TITLES] as const;
 
 export type PillValue = (typeof PILL_OPTIONS)[number];
 
