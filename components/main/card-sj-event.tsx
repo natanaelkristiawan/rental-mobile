@@ -5,7 +5,7 @@ import { cn } from "@/lib/utils";
 import { MapPin, Calendar } from "lucide-react";
 
 const LABEL_CLASS =
-  "text-[10px] font-medium uppercase tracking-[0.16em] text-muted-foreground";
+  "text-sm font-medium uppercase tracking-[0.16em] text-muted-foreground";
 
 export interface CardSJEventProps {
   /** PIC Client name (e.g. "Budi Santoso") */

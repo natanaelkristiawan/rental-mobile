@@ -75,8 +75,13 @@ export function WidgetSJStatus({ steps, className }: WidgetSJStatusProps) {
             </div>
 
             {/* Title + subtitle */}
-            <div className="min-w-0 flex-1 pb-6">
-              <div className="flex flex-wrap items-center gap-2">
+            <div className="min-w-0 flex-1 pb-6 flex flex-col gap-2">
+              {step.progress === "running" && step.status && (
+                  <span className="inline-flex rounded-full bg-blue-100 px-2 py-0.5 text-sm font-semibold uppercase tracking-wide text-blue-700 dark:bg-blue-500/20 dark:text-blue-200">
+                    {step.status}
+                  </span>
+              )}
+              <div className="d-block">
                 <span
                   className={cn(
                     "text-sm font-semibold",
@@ -87,13 +92,7 @@ export function WidgetSJStatus({ steps, className }: WidgetSJStatusProps) {
                 >
                   {step.title}
                 </span>
-                {step.progress === "running" && step.status && (
-                  <span className="inline-flex rounded-full bg-blue-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-blue-700 dark:bg-blue-500/20 dark:text-blue-200">
-                    {step.status}
-                  </span>
-                )}
-              </div>
-              {step.subtitle && (
+                {step.subtitle && (
                 <p
                   className={cn(
                     "mt-0.5 text-xs",
@@ -105,6 +104,9 @@ export function WidgetSJStatus({ steps, className }: WidgetSJStatusProps) {
                   {step.subtitle}
                 </p>
               )}
+              </div>
+             
+            
             </div>
           </div>
         );

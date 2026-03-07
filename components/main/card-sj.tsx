@@ -59,7 +59,7 @@ export function CardSJ({
   return (
     <Card
       className={cn(
-        "cursor-pointer rounded-3xl border border-border/60 bg-card/90 px-4 py-3 shadow-sm transition-all",
+        "cursor-pointer rounded-3xl border border-border/60 bg-card/90 py-6 px-4 shadow-sm transition-all",
         "hover:-translate-y-0.5 hover:shadow-md",
         className
       )}
@@ -68,12 +68,12 @@ export function CardSJ({
     >
       <CardHeader className="flex flex-col gap-1 p-0">
         <div className="flex min-w-0 items-start justify-between gap-12">
-          <p className="min-w-0 break-all text-[10px] font-medium leading-snug tracking-[0.16em] text-muted-foreground/70 uppercase line-clamp-2">
+          <p className="min-w-0 break-all text-sm font-medium leading-snug tracking-[0.16em] text-muted-foreground/70 uppercase line-clamp-2">
             {referenceId}
           </p>
           <span
             className={cn(
-              "inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[10px] font-semibold uppercase tracking-wide",
+              "inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-sm font-semibold uppercase tracking-wide",
               badgeStyle
             )}
           >
@@ -97,10 +97,10 @@ export function CardSJ({
               />
             </span>
             <div className="flex flex-col">
-              <span className="text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+              <span className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
                 Tujuan
               </span>
-              <span className="text-xs font-medium text-foreground">
+              <span className="text-sm font-medium text-foreground">
                 {location}
               </span>
             </div>
@@ -114,10 +114,10 @@ export function CardSJ({
               />
             </span>
             <div className="flex flex-col">
-              <span className="text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+              <span className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
                 Muatan
               </span>
-              <span className="text-xs font-medium text-foreground">
+              <span className="text-sm font-medium text-foreground">
                 {itemCount}
               </span>
             </div>

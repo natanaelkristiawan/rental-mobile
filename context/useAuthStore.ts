@@ -7,7 +7,15 @@ export interface User {
     id: string;
     email: string;
     name?: string;
+    phone?: string;
     // Add other relevant user fields returned by your NestJS BE
+}
+
+export interface UpdateProfilePayload {
+    name?: string;
+    email?: string;
+    phone?: string;
+    newPassword?: string;
 }
 
 export interface AuthResponse {
@@ -19,9 +27,11 @@ interface AuthState {
     user: User | null;
     token: string | null;
     isLoading: boolean;
+    isUpdating: boolean;
     error: string | null;
     login: (email: string, password: string) => Promise<void>;
     logout: () => void;
+    updateProfile: (payload: UpdateProfilePayload) => Promise<void>;
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -30,6 +40,7 @@ export const useAuthStore = create<AuthState>()(
             user: null,
             token: null,
             isLoading: false,
+            isUpdating: false,
             error: null,
 
             login: async (email, password) => {
@@ -99,6 +110,53 @@ export const useAuthStore = create<AuthState>()(
                     document.cookie = "auth-token=; path=/; max-age=0";
                 }
                 set({ user: null, token: null, error: null });
+            },
+
+            updateProfile: async (payload) => {
+                set({ isUpdating: true, error: null });
+                try {
+                    const { user } = useAuthStore.getState();
+                    if (!user) {
+                        throw new Error("Not authenticated");
+                    }
+                    // --- Dummy update (replace with API call when ready) ---
+                    const updatedUser: User = {
+                        ...user,
+                        ...(payload.name !== undefined && { name: payload.name }),
+                        ...(payload.email !== undefined && { email: payload.email }),
+                        ...(payload.phone !== undefined && { phone: payload.phone }),
+                    };
+                    set({
+                        user: updatedUser,
+                        isUpdating: false,
+                        error: null,
+                    });
+                    // --- Uncomment below to use API instead ---
+                    /*
+                    const response = await fetch("/api/auth/profile", {
+                        method: "PATCH",
+                        headers: {
+                            "Content-Type": "application/json",
+                            "Authorization": `Bearer ${useAuthStore.getState().token}`,
+                        },
+                        body: JSON.stringify({
+                            name: payload.name,
+                            email: payload.email,
+                            phone: payload.phone,
+                            newPassword: payload.newPassword,
+                        }),
+                    });
+                    const result = await response.json();
+                    if (!response.ok) throw new Error(result.message || "Failed to update profile");
+                    set({ user: result.data.user, isUpdating: false, error: null });
+                    */
+                } catch (error: any) {
+                    set({
+                        error: error.message || "Gagal memperbarui profil",
+                        isUpdating: false,
+                    });
+                    throw error;
+                }
             },
         }),
         {

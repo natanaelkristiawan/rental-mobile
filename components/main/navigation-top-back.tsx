@@ -53,6 +53,7 @@ export function NavigationTopBack({
           {backContent}
         </button>
       )}
+      
     </header>
   );
 }

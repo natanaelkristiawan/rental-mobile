@@ -18,7 +18,7 @@ export function CardHeading({ label, value, className }: CardHeadingProps) {
         className
       )}
     >
-      <p className="text-[10px] font-medium uppercase tracking-[0.16em] text-muted-foreground">
+      <p className="text-sm font-medium uppercase tracking-[0.16em] text-muted-foreground">
         {label}
       </p>
       <p className="mt-1.5 min-w-0 break-all text-sm font-semibold leading-snug text-foreground">

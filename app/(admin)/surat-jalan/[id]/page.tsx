@@ -10,7 +10,6 @@ import { CardSJEvent } from "@/components/main/card-sj-event";
 import { WidgetDetailBarang } from "@/components/main/widget-detail-barang";
 import { useSuratJalanBarangStore } from "@/context/suratJalanBarang";
 import { Button } from "@/components/ui/button";
-import { Camera } from "lucide-react";
 
 /** Convert URL slug back to referenceId (SJLED-xxx -> SJLED/xxx) */
 function fromSlug(slug: string): string {
@@ -39,12 +38,21 @@ export default function SuratJalanDetailPage() {
   return (
     <main className="min-h-screen p-8 pb-24">
       <NavigationTopBack title="Detail Surat Jalan" backHref="/" />
+      
       <CardHeading
         label="NO. SURAT JALAN"
         value={suratJalanNumber}
         className="mt-4"
       />
+      <Button
+        className="mt-6 w-full rounded-full bg-blue-600 py-3 text-white shadow-md hover:bg-blue-700"
+        size="lg"
+      >
+        Update Status
+      </Button>
+      
       <CardSJStatus steps={steps} className="mt-6" />
+      
       <CardSJEvent
         picClient={item?.clientName ?? "—"}
         size="3×4=12m2"
@@ -71,13 +79,7 @@ export default function SuratJalanDetailPage() {
         )}
       </div>
 
-      <Button
-        className="mt-6 w-full rounded-full bg-blue-600 py-3 text-white shadow-md hover:bg-blue-700"
-        size="lg"
-      >
-        <Camera className="size-5" aria-hidden />
-        Update Status
-      </Button>
+
     </main>
   );
 }

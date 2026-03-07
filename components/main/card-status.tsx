@@ -55,14 +55,14 @@ export function StatCard({
         />
         <span
           className={cn(
-            "absolute right-0 top-0 flex size-4 translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border border-white text-[10px] font-semibold leading-none dark:border-background",
+            "absolute right-0 top-0 flex size-4 translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border border-white text-sm font-semibold leading-none dark:border-background",
             styles.badge
           )}
         >
           {value}
         </span>
       </div>
-      <span className="text-center text-[10px] font-medium uppercase leading-tight tracking-wide text-muted-foreground">
+      <span className="text-center text-sm font-medium uppercase leading-tight tracking-wide text-muted-foreground">
         {title}
       </span>
     </div>
