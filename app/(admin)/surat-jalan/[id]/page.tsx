@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useParams } from "next/navigation";
 import { NavigationTopBack } from "@/components/main/navigation-top-back";
 import { CardHeading } from "@/components/main/card-heading";
@@ -45,10 +46,11 @@ export default function SuratJalanDetailPage() {
         className="mt-4"
       />
       <Button
+        asChild
         className="mt-6 w-full rounded-full bg-blue-600 py-3 text-white shadow-md hover:bg-blue-700"
         size="lg"
       >
-        Update Status
+        <Link href={`/surat-jalan/${id}/update`}>Update Status</Link>
       </Button>
       
       <CardSJStatus steps={steps} className="mt-6" />
