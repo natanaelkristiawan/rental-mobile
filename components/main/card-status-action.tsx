@@ -74,7 +74,7 @@ export function CardStatusAction({
           "cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
         isInteractive &&
           !selected &&
-          "hover:bg-muted/50 active:bg-muted",
+          "hover:bg-muted/50 active:bg-muted hover:shadow-md",
         className
       )}
     >

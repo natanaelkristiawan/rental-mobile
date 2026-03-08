@@ -53,6 +53,18 @@ const dummySuratJalanResponse: GlobalInterface<SuratJalanItem[]> = {
   ],
 };
 
+/** Payload for updating Surat Jalan status (PIC, status, signature) */
+export interface UpdateSuratJalanStatusPayload {
+  /** PIC id from list, or empty when "other" is selected */
+  picId: string;
+  /** PIC display name (from list item or from "other" text input) */
+  picName: string;
+  /** Status/action id (e.g. 0–4 for action index, or server status id) */
+  statusId: number;
+  /** Signature canvas as base64 data URL (e.g. image/png;base64,...) or null if not signed */
+  signImage: string | null;
+}
+
 /** Build detail page path from referenceId (e.g. SJLED/xxx -> /surat-jalan/SJLED-xxx) */
 export function getSuratJalanDetailPath(referenceId: string): string {
   return `/surat-jalan/${referenceId.replace(/\//g, "-")}`;
@@ -73,13 +85,33 @@ interface SuratJalanState {
   items: SuratJalanItem[];
   loading: boolean;
   error: string | null;
+  isUpdating: boolean;
+  updateError: string | null;
+  /** Show success modal after update succeeds */
+  modalSuccess: boolean;
+  /** Show failed modal after update fails */
+  modalFailed: boolean;
   fetch: () => Promise<void>;
+  /** Update Surat Jalan status: send picId, picName, statusId, signImage to server */
+  updateStatus: (
+    referenceId: string,
+    payload: UpdateSuratJalanStatusPayload
+  ) => Promise<void>;
+  /** Close success modal */
+  closeSuccessModal: () => void;
+  /** Close failed modal */
+  closeFailedModal: () => void;
 }
 
 export const useSuratJalanStore = create<SuratJalanState>()((set) => ({
   items: [],
   loading: false,
   error: null,
+  isUpdating: false,
+  updateError: null,
+  modalSuccess: false,
+  modalFailed: false,
+
   fetch: async () => {
     set({ loading: true, error: null });
     try {
@@ -105,4 +137,42 @@ export const useSuratJalanStore = create<SuratJalanState>()((set) => ({
       });
     }
   },
+
+  updateStatus: async (referenceId, payload) => {
+    set({ isUpdating: true, updateError: null });
+    try {
+      // --- Dummy: simulate API call (replace with real fetch when backend is ready) ---
+      await new Promise((resolve) => setTimeout(resolve, 800));
+      // Example request body: { referenceId, picId, picName, statusId, signImage }
+      const body = {
+        referenceId,
+        picId: payload.picId,
+        picName: payload.picName,
+        statusId: payload.statusId,
+        signImage: payload.signImage,
+      };
+      if (process.env.NODE_ENV === "development") {
+        console.log("[SuratJalan] updateStatus payload", body);
+      }
+      // Simulate success; replace with:
+      // const response = await fetch("/api/surat-jalan/update-status", {
+      //   method: "POST",
+      //   headers: { "Content-Type": "application/json" },
+      //   body: JSON.stringify(body),
+      // });
+      // const result = await response.json();
+      // if (!response.ok) throw new Error(result.message ?? "Gagal update status");
+      set({ isUpdating: false, updateError: null, modalSuccess: true });
+      // Optionally refresh list or update local item status here
+      return;
+    } catch (err: unknown) {
+      const message =
+        err instanceof Error ? err.message : "Gagal memperbarui status surat jalan";
+      set({ isUpdating: false, updateError: message, modalFailed: true });
+      throw err;
+    }
+  },
+
+  closeSuccessModal: () => set({ modalSuccess: false }),
+  closeFailedModal: () => set({ modalFailed: false }),
 }));

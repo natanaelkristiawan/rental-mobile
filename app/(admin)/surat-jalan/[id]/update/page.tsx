@@ -1,11 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { NavigationTopBack } from "@/components/main/navigation-top-back";
 import { CardStatusCurrent } from "@/components/main/card-status-current";
 import { CardStatusAction } from "@/components/main/card-status-action";
 import type { CardStatusActionVariant } from "@/components/main/card-status-action";
+import { CardStatusDetail } from "@/components/main/card-status-detail";
 import {
   Archive,
   Truck,
@@ -14,6 +15,16 @@ import {
   CircleCheck,
   type LucideIcon,
 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { ModalLoading } from "@/components/main/modal-loading";
+import { ModalSuccess } from "@/components/main/modal-success";
+import { ModalFailed } from "@/components/main/modal-failed";
+import { useSuratJalanStore } from "@/context/suratJalan";
+
+/** Convert URL slug to referenceId (SJLED-xxx -> SJLED/xxx) */
+function toReferenceId(slug: string): string {
+  return slug.replace(/^([A-Za-z0-9]+)-/, "$1/");
+}
 
 const STATUS_ACTIONS: Array<{
   title: string;
@@ -55,11 +66,40 @@ const STATUS_ACTIONS: Array<{
 
 export default function SuratJalanUpdatePage() {
   const params = useParams();
+  const router = useRouter();
   const id = params.id as string;
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
 
+  const updateStatus = useSuratJalanStore((s) => s.updateStatus);
+  const isUpdating = useSuratJalanStore((s) => s.isUpdating);
+  const modalSuccess = useSuratJalanStore((s) => s.modalSuccess);
+  const modalFailed = useSuratJalanStore((s) => s.modalFailed);
+  const updateError = useSuratJalanStore((s) => s.updateError);
+  const closeSuccessModal = useSuratJalanStore((s) => s.closeSuccessModal);
+  const closeFailedModal = useSuratJalanStore((s) => s.closeFailedModal);
+
+  const referenceId = toReferenceId(id);
+
+  async function handleSimpan() {
+    try {
+      await updateStatus(referenceId, {
+        picId: "1",
+        picName: "Demo PIC",
+        statusId: selectedIndex ?? 0,
+        signImage: null,
+      });
+    } catch {
+      // Error and modal handled in store
+    }
+  }
+
+  function handleCloseSuccess() {
+    closeSuccessModal();
+    router.push(`/surat-jalan/${id}`);
+  }
+
   return (
-    <main className="min-h-screen p-8 pb-24">
+    <main className="min-h-screen p-8 pb-32">
       <NavigationTopBack
         title="Update Surat Jalan"
         backHref={`/surat-jalan/${id}`}
@@ -86,6 +126,32 @@ export default function SuratJalanUpdatePage() {
           />
         ))}
       </div>
+
+      <CardStatusDetail className="mt-8" />
+
+      <Button
+        type="button"
+        onClick={handleSimpan}
+        disabled={isUpdating}
+        className="mt-8 w-full rounded-full bg-blue-600 py-3 text-white shadow-md hover:bg-blue-700"
+        size="lg"
+      >
+        {isUpdating ? "Memproses..." : "Simpan"}
+      </Button>
+
+      <ModalLoading open={isUpdating} message="Memproses..." />
+      <ModalSuccess
+        open={modalSuccess}
+        title="Berhasil"
+        message="Status surat jalan telah diperbarui."
+        onClose={handleCloseSuccess}
+      />
+      <ModalFailed
+        open={modalFailed}
+        title="Gagal"
+        message={updateError ?? undefined}
+        onClose={closeFailedModal}
+      />
     </main>
   );
 }
