@@ -137,7 +137,7 @@ function HomeContent() {
         <div className="mt-4 flex flex-col gap-4">
           {filteredSjItems.map((item) => (
             <CardSJ
-              key={item.referenceId}
+              key={item.id}
               status={item.status}
               statusIcon={
                 item.statusIcon ? SJ_ICON_MAP[item.statusIcon] : Package
@@ -146,7 +146,7 @@ function HomeContent() {
               clientName={item.clientName}
               location={item.location}
               itemCount={item.itemCount}
-              onClick={() => router.push(getSuratJalanDetailPath(item.referenceId))}
+              onClick={() => router.push(getSuratJalanDetailPath(item.id))}
             />
           ))}
           {filteredSjItems.length === 0 && (

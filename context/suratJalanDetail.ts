@@ -1,5 +1,15 @@
 import { create } from "zustand";
 import type { SJStatusProgress } from "@/components/main/widget-sj-status";
+import type { SuratJalanItem } from "@/context/suratJalan";
+import { api } from "@/lib/api";
+
+/** Detail item from GET /api/mobile/sj/:no_surat_jalan (extends list item with event fields) */
+export interface SuratJalanDetailItem extends SuratJalanItem {
+  event_start_date?: string | null;
+  event_end_date?: string | null;
+  keterangan?: string | null;
+  size?: string | null;
+}
 
 /** Step data for widget-sj-status (no icon; widget uses default by index) */
 export interface SuratJalanDetailStep {
@@ -83,11 +93,41 @@ const SAMPLE_STEPS_BY_REFERENCE_ID: Record<string, SuratJalanDetailStep[]> = {
 };
 
 interface SuratJalanDetailState {
+  item: SuratJalanDetailItem | null;
+  loading: boolean;
+  error: string | null;
+  /** Fetch single Surat Jalan by numeric id */
+  fetch: (id: number | string) => Promise<void>;
   /** Get status steps for a Surat Jalan by referenceId (or URL slug converted to referenceId) */
   getSteps: (referenceId: string) => SuratJalanDetailStep[];
 }
 
-export const useSuratJalanDetailStore = create<SuratJalanDetailState>()(() => ({
+export const useSuratJalanDetailStore = create<SuratJalanDetailState>()((set, get) => ({
+  item: null,
+  loading: false,
+  error: null,
+
+  fetch: async (id: number | string) => {
+    const idStr = String(id);
+    set({ loading: true, error: null });
+    try {
+      const { data } = await api.get<{ message?: string; data?: SuratJalanDetailItem }>(
+        `/api/mobile/sj/${encodeURIComponent(idStr)}`
+      );
+      if (data?.data) {
+        set({ item: data.data, loading: false, error: null });
+      } else {
+        set({ item: null, loading: false, error: "Data not found" });
+      }
+    } catch (err) {
+      set({
+        item: null,
+        loading: false,
+        error: "Failed to load Surat Jalan detail",
+      });
+    }
+  },
+
   getSteps: (referenceId: string) => {
     const steps = SAMPLE_STEPS_BY_REFERENCE_ID[referenceId];
     return steps ?? DEFAULT_STEPS;

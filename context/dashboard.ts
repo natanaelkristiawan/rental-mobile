@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { GlobalInterface } from "@/lib/interface";
+import { api } from "@/lib/api";
 
 /** Status titles used by dashboard and Surat Jalan */
 export const DASHBOARD_STATUS_TITLES = [
@@ -17,26 +18,57 @@ export interface DashboardStatCard {
   icon: "package" | "truck" | "map-pin" | "warehouse" | "circle-check";
 }
 
+type DashboardApiData = Record<DashboardStatusTitle, number>;
+
+const DEFAULT_DASHBOARD_CARDS: DashboardStatCard[] = [
+  { title: "SIAP", value: "0", icon: "package" },
+  { title: "KIRIM", value: "0", icon: "truck" },
+  { title: "LOKASI", value: "0", icon: "map-pin" },
+  { title: "CEK", value: "0", icon: "warehouse" },
+  { title: "OK", value: "0", icon: "circle-check" },
+];
+
 /** Dummy API response shape (replace with real fetch when backend is ready) */
 const dummyDashboardResponse: GlobalInterface<DashboardStatCard[]> = {
   statusCode: 200,
   message: "OK",
-  data: [
-    { title: "SIAP", value: "1", icon: "package" },
-    { title: "KIRIM", value: "2", icon: "truck" },
-    { title: "LOKASI", value: "3", icon: "map-pin" },
-    { title: "CEK", value: "2", icon: "warehouse" },
-    { title: "OK", value: "2", icon: "circle-check" },
-  ],
+  data: DEFAULT_DASHBOARD_CARDS,
 };
 
 /**
- * Fetches dashboard cards. Dummy implementation: returns static data after a short delay.
- * Replace with real API call: fetch("/api/dashboard/cards").then((r) => r.json())
+ * Fetches dashboard cards. Calls GET /api/mobile/dashboard (counter widget).
+ * Response is logged for debugging; still returns dummy data until response is applied.
  */
 export async function getDashboardCards(): Promise<
   GlobalInterface<DashboardStatCard[]>
 > {
+  try {
+    const { data } = await api.get<GlobalInterface<DashboardApiData>>(
+      "/api/mobile/dashboard"
+    );
+    console.log("[getDashboardCards] API response:", data);
+    if (data?.data != null) {
+      const statusMap = data.data;
+      const mergedCards: DashboardStatCard[] = DEFAULT_DASHBOARD_CARDS.map(
+        (card) => {
+          return {
+            ...card,
+            value:
+              statusMap[card.title] !== undefined
+                ? String(statusMap[card.title])
+                : card.value,
+          };
+        }
+      );
+
+      return {
+        ...data,
+        data: mergedCards,
+      };
+    }
+  } catch (err) {
+    console.log("[getDashboardCards] API error:", err);
+  }
   await new Promise((resolve) => setTimeout(resolve, 300));
   return dummyDashboardResponse;
 }
@@ -53,7 +85,7 @@ interface DashboardState {
 }
 
 export const useDashboardStore = create<DashboardState>()((set) => ({
-  cards: [],
+  cards: DEFAULT_DASHBOARD_CARDS,
   loading: false,
   error: null,
   fetch: async () => {

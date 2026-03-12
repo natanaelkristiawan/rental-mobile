@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { GlobalInterface } from "@/lib/interface";
 import type { DashboardStatusTitle } from "@/context/dashboard";
+import { api } from "@/lib/api";
 
 /** Icon key aligned with dashboard stat cards */
 export type SuratJalanStatusIcon =
@@ -12,6 +13,8 @@ export type SuratJalanStatusIcon =
 
 /** API shape for a single Surat Jalan item (maps to CardSJProps) */
 export interface SuratJalanItem {
+  /** Database ID of Surat Jalan */
+  id: number;
   /** Status label; use dashboard status titles (SIAP, KIRIM, LOKASI, CEK, OK) */
   status: DashboardStatusTitle;
   referenceId: string;
@@ -26,30 +29,6 @@ const dummySuratJalanResponse: GlobalInterface<SuratJalanItem[]> = {
   statusCode: 200,
   message: "OK",
   data: [
-    {
-      status: "SIAP",
-      referenceId: "SJLED/d4e56f11-xyz4-7zzk-a1b2-1234567890ab",
-      clientName: "PT Maju Jaya",
-      location: "Grand Hyatt Bali",
-      itemCount: "2 item barang",
-      statusIcon: "package",
-    },
-    {
-      status: "KIRIM",
-      referenceId: "SJLED/e5f67g22-yza5-8aal-b2c3-2345678901bc",
-      clientName: "CV Sentosa",
-      location: "The Ritz-Carlton Jakarta",
-      itemCount: "3 item barang",
-      statusIcon: "truck",
-    },
-    {
-      status: "LOKASI",
-      referenceId: "SJLED/f6g78h33-azb6-9bbm-c3d4-3456789012cd",
-      clientName: "PT Harmoni",
-      location: "Four Seasons Bali",
-      itemCount: "1 item barang",
-      statusIcon: "map-pin",
-    },
   ],
 };
 
@@ -65,20 +44,30 @@ export interface UpdateSuratJalanStatusPayload {
   signImage: string | null;
 }
 
-/** Build detail page path from referenceId (e.g. SJLED/xxx -> /surat-jalan/SJLED-xxx) */
-export function getSuratJalanDetailPath(referenceId: string): string {
-  return `/surat-jalan/${referenceId.replace(/\//g, "-")}`;
+/** Build detail page path from numeric id (e.g. 123 -> /surat-jalan/123) */
+export function getSuratJalanDetailPath(id: number | string): string {
+  return `/surat-jalan/${id}`;
 }
 
 /**
- * Fetches Surat Jalan list. Dummy implementation: returns static data after a short delay.
- * Replace with: fetch("/api/surat-jalan").then((r) => r.json())
+ * Fetches Surat Jalan list from GET /api/mobile/sj.
  */
 export async function getSuratJalanList(): Promise<
   GlobalInterface<SuratJalanItem[]>
 > {
-  await new Promise((resolve) => setTimeout(resolve, 300));
-  return dummySuratJalanResponse;
+  try {
+    const { data } = await api.get<{
+      message?: string;
+      data?: SuratJalanItem[];
+    }>("/api/mobile/sj");
+    return {
+      statusCode: 200,
+      message: data?.message ?? "OK",
+      data: data?.data ?? [],
+    };
+  } catch {
+    return dummySuratJalanResponse;
+  }
 }
 
 interface SuratJalanState {

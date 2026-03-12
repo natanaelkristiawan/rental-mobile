@@ -2,6 +2,7 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
 import { GlobalInterface } from "@/lib/interface";
+import { api } from "@/lib/api";
 
 export interface User {
     id: string;
@@ -46,59 +47,43 @@ export const useAuthStore = create<AuthState>()(
             login: async (email, password) => {
                 set({ isLoading: true, error: null });
                 try {
-                    // --- Dummy login (remove when using API) ---
-                    const DUMMY_EMAIL = "user@wap.com";
-                    const DUMMY_PASSWORD = "12345678";
-                    if (email.trim() !== DUMMY_EMAIL || password !== DUMMY_PASSWORD) {
-                        throw new Error("Invalid email or password");
+                    const { data: result } = await api.post<{
+                        message: string;
+                        info?: string;
+                        data: { token: string; id: string; email: string; username: string };
+                    }>("/api/auth/login", { email, password });
+
+                    if (result.message !== "success") {
+                        throw new Error(result.info || result.message || "Failed to login");
                     }
-                    const token = "dummy-token-" + Date.now();
-                    const user: User = {
-                        id: "1",
-                        email: DUMMY_EMAIL,
-                        name: "Demo User",
-                    };
+
+                    const data = result.data;
+                    const token = data.token;
+
                     if (typeof document !== "undefined") {
                         document.cookie = `auth-token=${token}; path=/; max-age=2592000; samesite=strict`;
                     }
+
+                    const user: User = {
+                        id: String(data.id),
+                        email: data.email,
+                        name: data.username,
+                    };
+
                     set({
                         user,
                         token,
                         isLoading: false,
                         error: null,
                     });
-                    return;
-                    // --- Uncomment below to use API instead ---
-                    /*
-                    const response = await fetch("/api/auth/login", {
-                        method: "POST",
-                        headers: {
-                            "Content-Type": "application/json",
-                        },
-                        body: JSON.stringify({ email, password }),
-                    });
-
-                    const result: GlobalInterface<AuthResponse> = await response.json();
-
-                    if (!response.ok || (result.statusCode && result.statusCode >= 400)) {
-                        throw new Error(result.message || "Failed to login");
-                    }
-
-                    const token = result.data.token;
-                    if (typeof document !== "undefined") {
-                        document.cookie = `auth-token=${token}; path=/; max-age=2592000; samesite=strict`;
-                    }
-
-                    set({
-                        user: result.data.user,
-                        token,
-                        isLoading: false,
-                        error: null,
-                    });
-                    */
                 } catch (error: any) {
+                    const message =
+                        error.response?.data?.info ||
+                        error.response?.data?.message ||
+                        error.message ||
+                        "An error occurred during login";
                     set({
-                        error: error.message || "An error occurred during login",
+                        error: message,
                         isLoading: false,
                     });
                     throw error;
@@ -133,21 +118,16 @@ export const useAuthStore = create<AuthState>()(
                     });
                     // --- Uncomment below to use API instead ---
                     /*
-                    const response = await fetch("/api/auth/profile", {
-                        method: "PATCH",
-                        headers: {
-                            "Content-Type": "application/json",
-                            "Authorization": `Bearer ${useAuthStore.getState().token}`,
-                        },
-                        body: JSON.stringify({
+                    const { data: result } = await api.patch<GlobalInterface<{ user: User }>>(
+                        "/api/auth/profile",
+                        {
                             name: payload.name,
                             email: payload.email,
                             phone: payload.phone,
                             newPassword: payload.newPassword,
-                        }),
-                    });
-                    const result = await response.json();
-                    if (!response.ok) throw new Error(result.message || "Failed to update profile");
+                        }
+                    );
+                    if (result.statusCode >= 400) throw new Error(result.message || "Failed to update profile");
                     set({ user: result.data.user, isUpdating: false, error: null });
                     */
                 } catch (error: any) {

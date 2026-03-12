@@ -1,10 +1,10 @@
 "use client";
 
+import { useEffect } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { NavigationTopBack } from "@/components/main/navigation-top-back";
 import { CardHeading } from "@/components/main/card-heading";
-import { useSuratJalanStore } from "@/context/suratJalan";
 import { useSuratJalanDetailStore } from "@/context/suratJalanDetail";
 import { CardSJStatus } from "@/components/main/card-sj-status";
 import { CardSJEvent } from "@/components/main/card-sj-event";
@@ -12,29 +12,47 @@ import { WidgetDetailBarang } from "@/components/main/widget-detail-barang";
 import { useSuratJalanBarangStore } from "@/context/suratJalanBarang";
 import { Button } from "@/components/ui/button";
 
-/** Convert URL slug back to referenceId (SJLED-xxx -> SJLED/xxx) */
-function fromSlug(slug: string): string {
-  return slug.replace(/^([A-Za-z0-9]+)-/, "$1/");
-}
-
 export default function SuratJalanDetailPage() {
   const params = useParams();
   const id = params.id as string;
-  const { items } = useSuratJalanStore();
 
-  const referenceId = fromSlug(id);
-  const item = items.find(
-    (i) => i.referenceId === referenceId || i.referenceId.replace(/\//g, "-") === id
-  );
-  const suratJalanNumber = item?.referenceId ?? referenceId;
+  const { item, loading, error, fetch } = useSuratJalanDetailStore();
 
-  
+  useEffect(() => {
+    if (id) fetch(id);
+  }, [id, fetch]);
+
+  const suratJalanNumber = item?.referenceId ?? id;
 
   const getSteps = useSuratJalanDetailStore((s) => s.getSteps);
-  const steps = getSteps(referenceId);
+  const effectiveReferenceId = item?.referenceId ?? "";
+  const steps = getSteps(effectiveReferenceId);
 
   const getBarang = useSuratJalanBarangStore((s) => s.getBarang);
-  const barangList = getBarang(referenceId);
+  const barangList = getBarang(effectiveReferenceId);
+
+  const tanggalEvent =
+    item?.event_start_date && item?.event_end_date
+      ? `${item.event_start_date} - ${item.event_end_date}`
+      : "—";
+
+  if (loading) {
+    return (
+      <main className="min-h-screen p-8 pb-24">
+        <NavigationTopBack title="Detail Surat Jalan" backHref="/" />
+        <p className="mt-4 text-muted-foreground">Memuat...</p>
+      </main>
+    );
+  }
+
+  if (error) {
+    return (
+      <main className="min-h-screen p-8 pb-24">
+        <NavigationTopBack title="Detail Surat Jalan" backHref="/" />
+        <p className="mt-4 text-destructive">{error}</p>
+      </main>
+    );
+  }
 
   return (
     <main className="min-h-screen p-8 pb-24">
@@ -57,10 +75,10 @@ export default function SuratJalanDetailPage() {
       
       <CardSJEvent
         picClient={item?.clientName ?? "—"}
-        size="3×4=12m2"
+        size={item?.size ?? "—"}
         lokasi={item?.location ?? "—"}
-        keterangan="Riser tinggi 50cm Genset 45kva"
-        tanggalEvent="2026-02-13 09:00 - 2026-02-14 18:00"
+        keterangan={item?.keterangan ?? "—"}
+        tanggalEvent={tanggalEvent}
         className="mt-6"
       />
       <h3 className="mt-6 text-lg font-semibold text-foreground">
