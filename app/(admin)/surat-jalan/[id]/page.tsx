@@ -24,7 +24,7 @@ export default function SuratJalanDetailPage() {
       fetch(id);
       fetchBarang(id);
     }
-  }, [id, fetch, fetchBarang]);
+  }, [id]);
 
 
   const suratJalanNumber = item?.referenceId ?? id;

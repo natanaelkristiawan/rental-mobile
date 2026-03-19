@@ -12,17 +12,54 @@ const PIC_OTHER_VALUE = "other";
 
 export interface CardStatusDetailProps {
   className?: string;
+  /** Called whenever the signature changes (base64 data URL or null when cleared) */
+  onSignChange?: (dataUrl: string | null) => void;
+  /** Called whenever the PIC selection changes, with resolved id and display name */
+  onPicChange?: (picId: string, picName: string) => void;
 }
 
-export function CardStatusDetail({ className }: CardStatusDetailProps) {
+export function CardStatusDetail({ className, onSignChange, onPicChange }: CardStatusDetailProps) {
   const [selectedPicId, setSelectedPicId] = useState("");
   const [picOtherName, setPicOtherName] = useState("");
 
-  const { items: picItems, isLoading: picLoading, error: picError, fetchPics } = usePicStore();
+  const {
+    items: picItems,
+    defaultSelectedId,
+    isLoading: picLoading,
+    error: picError,
+    fetchPics,
+  } = usePicStore();
 
   useEffect(() => {
     fetchPics();
   }, [fetchPics]);
+
+  useEffect(() => {
+    if (!selectedPicId && defaultSelectedId) {
+      setSelectedPicId(defaultSelectedId);
+      const matched = picItems.find((p) => p.id === defaultSelectedId);
+      if (matched) {
+        onPicChange?.(matched.id, matched.name);
+      }
+    }
+  }, [selectedPicId, defaultSelectedId, picItems, onPicChange]);
+
+  function handlePicChange(value: string) {
+    setSelectedPicId(value);
+    if (value === PIC_OTHER_VALUE) {
+      onPicChange?.(PIC_OTHER_VALUE, picOtherName);
+    } else {
+      const matched = picItems.find((p) => p.id === value);
+      onPicChange?.(value, matched?.name ?? "");
+    }
+  }
+
+  function handleOtherNameChange(value: string) {
+    setPicOtherName(value);
+    if (selectedPicId === PIC_OTHER_VALUE) {
+      onPicChange?.(PIC_OTHER_VALUE, value);
+    }
+  }
 
   const isPicOther = selectedPicId === PIC_OTHER_VALUE;
 
@@ -42,7 +79,7 @@ export function CardStatusDetail({ className }: CardStatusDetailProps) {
           <select
             id="pic-select"
             value={selectedPicId}
-            onChange={(e) => setSelectedPicId(e.target.value)}
+            onChange={(e) => handlePicChange(e.target.value)}
             disabled={picLoading}
             className="h-9 w-full min-w-0 rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-xs outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:opacity-50 md:text-sm dark:bg-input/30"
           >
@@ -68,11 +105,11 @@ export function CardStatusDetail({ className }: CardStatusDetailProps) {
               type="text"
               placeholder="Masukkan nama PIC"
               value={picOtherName}
-              onChange={(e) => setPicOtherName(e.target.value)}
+              onChange={(e) => handleOtherNameChange(e.target.value)}
             />
           </div>
         )}
-        <Sign height={200} className="pt-2" />
+        <Sign height={200} className="pt-2" onChange={onSignChange} />
       </CardContent>
     </Card>
   );

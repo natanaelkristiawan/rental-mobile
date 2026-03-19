@@ -38,8 +38,10 @@ export interface UpdateSuratJalanStatusPayload {
   picId: string;
   /** PIC display name (from list item or from "other" text input) */
   picName: string;
-  /** Status/action id (e.g. 0–4 for action index, or server status id) */
+  /** Numeric action index (0–3) */
   statusId: number;
+  /** Action key string (e.g. "kirim", "lokasi", "cek", "ok") sent to BE as statusId */
+  action?: string;
   /** Signature canvas as base64 data URL (e.g. image/png;base64,...) or null if not signed */
   signImage: string | null;
 }
@@ -130,30 +132,19 @@ export const useSuratJalanStore = create<SuratJalanState>()((set) => ({
   updateStatus: async (referenceId, payload) => {
     set({ isUpdating: true, updateError: null });
     try {
-      // --- Dummy: simulate API call (replace with real fetch when backend is ready) ---
-      await new Promise((resolve) => setTimeout(resolve, 800));
-      // Example request body: { referenceId, picId, picName, statusId, signImage }
-      const body = {
-        referenceId,
-        picId: payload.picId,
-        picName: payload.picName,
-        statusId: payload.statusId,
-        signImage: payload.signImage,
-      };
-      if (process.env.NODE_ENV === "development") {
-        console.log("[SuratJalan] updateStatus payload", body);
+      const { data } = await api.put<{ message: string; info?: string }>(
+        `/api/mobile/sj/${encodeURIComponent(referenceId)}/status`,
+        {
+          statusId: payload.action ?? payload.statusId,
+          picId: payload.picId,
+          picName: payload.picName,
+          signImage: payload.signImage,
+        }
+      );
+      if (data?.message !== "success") {
+        throw new Error(data?.info ?? data?.message ?? "Gagal update status");
       }
-      // Simulate success; replace with:
-      // const response = await fetch("/api/surat-jalan/update-status", {
-      //   method: "POST",
-      //   headers: { "Content-Type": "application/json" },
-      //   body: JSON.stringify(body),
-      // });
-      // const result = await response.json();
-      // if (!response.ok) throw new Error(result.message ?? "Gagal update status");
       set({ isUpdating: false, updateError: null, modalSuccess: true });
-      // Optionally refresh list or update local item status here
-      return;
     } catch (err: unknown) {
       const message =
         err instanceof Error ? err.message : "Gagal memperbarui status surat jalan";
