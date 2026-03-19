@@ -3,7 +3,7 @@ import type { SJStatusProgress } from "@/components/main/widget-sj-status";
 import type { SuratJalanItem } from "@/context/suratJalan";
 import { api } from "@/lib/api";
 
-/** Detail item from GET /api/mobile/sj/:no_surat_jalan (extends list item with event fields) */
+/** Detail item from GET /api/mobile/sj/:id (extends list item with event fields) */
 export interface SuratJalanDetailItem extends SuratJalanItem {
   event_start_date?: string | null;
   event_end_date?: string | null;
@@ -19,7 +19,6 @@ export interface SuratJalanDetailStep {
   status?: string;
 }
 
-/** Default steps when no data for a given ID */
 const DEFAULT_STEPS: SuratJalanDetailStep[] = [
   { title: "Siap di Gudang", subtitle: "PIC Gudang: -", progress: "finished" },
   { title: "Barang Dikirim", subtitle: "PIC Gudang: -", progress: "next" },
@@ -32,104 +31,86 @@ const DEFAULT_STEPS: SuratJalanDetailStep[] = [
   },
 ];
 
-/** Sample status steps by Surat Jalan referenceId (ID from list/detail) */
-const SAMPLE_STEPS_BY_REFERENCE_ID: Record<string, SuratJalanDetailStep[]> = {
-  "SJLED/d4e56f11-xyz4-7zzk-a1b2-1234567890ab": [
-    {
-      title: "Siap di Gudang",
-      subtitle: "PIC Gudang: Gungde",
-      progress: "finished",
-    },
-    {
-      title: "Barang Dikirim",
-      subtitle: "PIC Gudang: Gungde",
-      progress: "running",
-      status: "DALAM PERJALANAN",
-    },
-    {
-      title: "Diterima Di Lokasi",
-      subtitle: "PIC Lapangan: Wayan",
-      progress: "next",
-    },
-    {
-      title: "Kembali ke Gudang",
-      subtitle: "PIC Lapangan: Wayan",
-      progress: "next",
-    },
-    {
-      title: "Verifikasi & Update Stok",
-      subtitle: "PIC Gudang: Gungde",
-      progress: "next",
-    },
-  ],
-  "SJLED/e5f67g22-yza5-8aal-b2c3-2345678901bc": [
-    { title: "Siap di Gudang", subtitle: "PIC Gudang: Gungde", progress: "finished" },
-    { title: "Barang Dikirim", subtitle: "PIC Gudang: Gungde", progress: "finished" },
-    {
-      title: "Diterima Di Lokasi",
-      subtitle: "PIC Lapangan: Wayan",
-      progress: "running",
-      status: "MENUNGGU KONFIRMASI",
-    },
-    { title: "Kembali ke Gudang", subtitle: "PIC Lapangan: Wayan", progress: "next" },
-    {
-      title: "Verifikasi & Update Stok",
-      subtitle: "PIC Gudang: Gungde",
-      progress: "next",
-    },
-  ],
-  "SJLED/f6g78h33-azb6-9bbm-c3d4-3456789012cd": [
-    { title: "Siap di Gudang", subtitle: "PIC Gudang: Gungde", progress: "finished" },
-    { title: "Barang Dikirim", subtitle: "PIC Gudang: Gungde", progress: "finished" },
-    { title: "Diterima Di Lokasi", subtitle: "PIC Lapangan: Wayan", progress: "finished" },
-    { title: "Kembali ke Gudang", subtitle: "PIC Lapangan: Wayan", progress: "finished" },
-    {
-      title: "Verifikasi & Update Stok",
-      subtitle: "PIC Gudang: Gungde",
-      progress: "running",
-      status: "SEDANG DICEK",
-    },
-  ],
-};
+function isValidProgress(p: string): p is SJStatusProgress {
+  return p === "finished" || p === "running" || p === "next";
+}
 
 interface SuratJalanDetailState {
   item: SuratJalanDetailItem | null;
   loading: boolean;
   error: string | null;
+  /** Status steps from GET /api/mobile/sj/:id/history */
+  steps: SuratJalanDetailStep[];
   /** Fetch single Surat Jalan by numeric id */
   fetch: (id: number | string) => Promise<void>;
-  /** Get status steps for a Surat Jalan by referenceId (or URL slug converted to referenceId) */
-  getSteps: (referenceId: string) => SuratJalanDetailStep[];
+  /** Load steps from history API (same id as detail) */
+  fetchSteps: (id: number | string) => Promise<void>;
 }
 
-export const useSuratJalanDetailStore = create<SuratJalanDetailState>()((set, get) => ({
-  item: null,
-  loading: false,
-  error: null,
+export const useSuratJalanDetailStore = create<SuratJalanDetailState>()(
+  (set, get) => ({
+    item: null,
+    loading: false,
+    error: null,
+    steps: DEFAULT_STEPS,
 
-  fetch: async (id: number | string) => {
-    const idStr = String(id);
-    set({ loading: true, error: null });
-    try {
-      const { data } = await api.get<{ message?: string; data?: SuratJalanDetailItem }>(
-        `/api/mobile/sj/${encodeURIComponent(idStr)}`
-      );
-      if (data?.data) {
-        set({ item: data.data, loading: false, error: null });
-      } else {
-        set({ item: null, loading: false, error: "Data not found" });
+    fetchSteps: async (id: number | string) => {
+      const idStr = String(id);
+      try {
+        const { data } = await api.get<{
+          data?: Array<{
+            title: string;
+            subtitle?: string;
+            progress: string;
+            status?: string;
+          }>;
+        }>(`/api/mobile/sj/${encodeURIComponent(idStr)}/history`);
+
+        const raw = data?.data;
+        if (!Array.isArray(raw) || raw.length === 0) {
+          set({ steps: [...DEFAULT_STEPS] });
+          return;
+        }
+
+        const steps: SuratJalanDetailStep[] = raw.map((row) => ({
+          title: row.title,
+          subtitle: row.subtitle,
+          progress: isValidProgress(row.progress) ? row.progress : "next",
+          ...(row.status ? { status: row.status } : {}),
+        }));
+        set({ steps });
+      } catch {
+        set({ steps: [...DEFAULT_STEPS] });
       }
-    } catch (err) {
-      set({
-        item: null,
-        loading: false,
-        error: "Failed to load Surat Jalan detail",
-      });
-    }
-  },
+    },
 
-  getSteps: (referenceId: string) => {
-    const steps = SAMPLE_STEPS_BY_REFERENCE_ID[referenceId];
-    return steps ?? DEFAULT_STEPS;
-  },
-}));
+    fetch: async (id: number | string) => {
+      const idStr = String(id);
+      set({ loading: true, error: null, steps: [...DEFAULT_STEPS] });
+      try {
+        const { data } = await api.get<{
+          message?: string;
+          data?: SuratJalanDetailItem;
+        }>(`/api/mobile/sj/${encodeURIComponent(idStr)}`);
+        if (data?.data) {
+          set({ item: data.data, loading: false, error: null });
+          await get().fetchSteps(idStr);
+        } else {
+          set({
+            item: null,
+            loading: false,
+            error: "Data not found",
+            steps: [...DEFAULT_STEPS],
+          });
+        }
+      } catch {
+        set({
+          item: null,
+          loading: false,
+          error: "Failed to load Surat Jalan detail",
+          steps: [...DEFAULT_STEPS],
+        });
+      }
+    },
+  })
+);

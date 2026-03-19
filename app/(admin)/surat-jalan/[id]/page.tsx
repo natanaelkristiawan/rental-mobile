@@ -16,20 +16,21 @@ export default function SuratJalanDetailPage() {
   const params = useParams();
   const id = params.id as string;
 
-  const { item, loading, error, fetch } = useSuratJalanDetailStore();
+  const { item, loading, error, fetch, steps } = useSuratJalanDetailStore();
+  const { fetch: fetchBarang, items: barangList } = useSuratJalanBarangStore();
 
   useEffect(() => {
-    if (id) fetch(id);
-  }, [id, fetch]);
+    if (id) {
+      fetch(id);
+      fetchBarang(id);
+    }
+  }, [id, fetch, fetchBarang]);
+
 
   const suratJalanNumber = item?.referenceId ?? id;
 
-  const getSteps = useSuratJalanDetailStore((s) => s.getSteps);
-  const effectiveReferenceId = item?.referenceId ?? "";
-  const steps = getSteps(effectiveReferenceId);
 
-  const getBarang = useSuratJalanBarangStore((s) => s.getBarang);
-  const barangList = getBarang(effectiveReferenceId);
+
 
   const tanggalEvent =
     item?.event_start_date && item?.event_end_date
