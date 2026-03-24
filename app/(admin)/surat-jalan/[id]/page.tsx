@@ -12,6 +12,19 @@ import { WidgetDetailBarang } from "@/components/main/widget-detail-barang";
 import { useSuratJalanBarangStore } from "@/context/suratJalanBarang";
 import { Button } from "@/components/ui/button";
 
+function formatDateTime(value?: string | null): string {
+  if (!value) return "—";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return value;
+  const pad2 = (n: number) => String(n).padStart(2, "0");
+  const year = date.getFullYear();
+  const month = pad2(date.getMonth() + 1);
+  const day = pad2(date.getDate());
+  const hour = pad2(date.getHours());
+  const minute = pad2(date.getMinutes());
+  return `${year}-${month}-${day} ${hour}:${minute}`;
+}
+
 export default function SuratJalanDetailPage() {
   const params = useParams();
   const id = params.id as string;
@@ -34,8 +47,9 @@ export default function SuratJalanDetailPage() {
 
   const tanggalEvent =
     item?.event_start_date && item?.event_end_date
-      ? `${item.event_start_date} - ${item.event_end_date}`
+      ? `${formatDateTime(item.event_start_date)} - ${formatDateTime(item.event_end_date)}`
       : "—";
+  const shouldHideUpdateButton = item?.status === "CEK" || item?.status === "OK" ;
 
   if (loading) {
     return (
@@ -64,18 +78,22 @@ export default function SuratJalanDetailPage() {
         value={suratJalanNumber}
         className="mt-4"
       />
-      <Button
-        asChild
-        className="mt-6 w-full rounded-full bg-blue-600 py-3 text-white shadow-md hover:bg-blue-700"
-        size="lg"
-      >
-        <Link href={`/surat-jalan/${id}/update`}>Update Status</Link>
-      </Button>
+      {!shouldHideUpdateButton && (
+        <Button
+          asChild
+          className="mt-6 w-full rounded-full bg-blue-600 py-3 text-white shadow-md hover:bg-blue-700"
+          size="lg"
+        >
+          <Link href={`/surat-jalan/${id}/update`}>Update Status</Link>
+        </Button>
+      )}
       
       <CardSJStatus steps={steps} className="mt-6" />
       
       <CardSJEvent
-        picClient={item?.clientName ?? "—"}
+        clientName={item?.clientName ?? "—"}
+        picGudang={item?.pic_gudang ?? item?.pic_name ?? "—"}
+        picLapangan={item?.pic_lapangan ?? "—"}
         size={item?.size ?? "—"}
         lokasi={item?.location ?? "—"}
         keterangan={item?.keterangan ?? "—"}

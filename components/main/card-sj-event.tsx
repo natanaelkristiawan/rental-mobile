@@ -8,8 +8,12 @@ const LABEL_CLASS =
   "text-sm font-medium uppercase tracking-[0.16em] text-muted-foreground";
 
 export interface CardSJEventProps {
-  /** PIC Client name (e.g. "Budi Santoso") */
-  picClient: string;
+  /** Client name (e.g. "PT Example") */
+  clientName: string;
+  /** PIC Gudang name */
+  picGudang: string;
+  /** PIC Lapangan name */
+  picLapangan: string;
   /** Size value (e.g. "3×4=12m2") */
   size: string;
   /** Location name (e.g. "Sofitel Nusa Dua") */
@@ -22,7 +26,9 @@ export interface CardSJEventProps {
 }
 
 export function CardSJEvent({
-  picClient,
+  clientName,
+  picGudang,
+  picLapangan,
   size,
   lokasi,
   keterangan,
@@ -37,15 +43,27 @@ export function CardSJEvent({
       )}
     >
       <CardContent className="flex flex-col gap-4 p-4">
-        {/* Top row: PIC CLIENT | SIZE */}
+        {/* Top row: CLIENT NAME | SIZE */}
         <div className="grid grid-cols-2 gap-4">
           <div className="flex flex-col gap-1">
-            <p className={LABEL_CLASS}>PIC CLIENT</p>
-            <p className="text-sm font-semibold text-foreground">{picClient}</p>
+            <p className={LABEL_CLASS}>CLIENT NAME</p>
+            <p className="text-sm font-semibold text-foreground">{clientName}</p>
           </div>
           <div className="flex flex-col gap-1">
             <p className={LABEL_CLASS}>SIZE</p>
             <p className="text-sm font-semibold text-foreground">{size}</p>
+          </div>
+        </div>
+
+        {/* PIC GUDANG | PIC LAPANGAN */}
+        <div className="grid grid-cols-2 gap-4">
+          <div className="flex flex-col gap-1">
+            <p className={LABEL_CLASS}>PIC GUDANG</p>
+            <p className="text-sm font-semibold text-foreground">{picGudang}</p>
+          </div>
+          <div className="flex flex-col gap-1">
+            <p className={LABEL_CLASS}>PIC LAPANGAN</p>
+            <p className="text-sm font-semibold text-foreground">{picLapangan}</p>
           </div>
         </div>
 

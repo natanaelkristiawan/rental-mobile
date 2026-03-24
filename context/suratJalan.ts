@@ -44,6 +44,10 @@ export interface UpdateSuratJalanStatusPayload {
   action?: string;
   /** Signature canvas as base64 data URL (e.g. image/png;base64,...) or null if not signed */
   signImage: string | null;
+  /** Client receiver name for lokasi step */
+  clientName?: string;
+  /** Client receiver signature image as base64 data URL */
+  signPenerimaImage?: string | null;
 }
 
 /** Build detail page path from numeric id (e.g. 123 -> /surat-jalan/123) */
@@ -139,6 +143,8 @@ export const useSuratJalanStore = create<SuratJalanState>()((set) => ({
           picId: payload.picId,
           picName: payload.picName,
           signImage: payload.signImage,
+          clientName: payload.clientName,
+          signPenerimaImage: payload.signPenerimaImage,
         }
       );
       if (data?.message !== "success") {

@@ -9,12 +9,16 @@ export interface SuratJalanDetailItem extends SuratJalanItem {
   event_end_date?: string | null;
   keterangan?: string | null;
   size?: string | null;
+  pic_name?: string | null;
+  pic_gudang?: string | null;
+  pic_lapangan?: string | null;
 }
 
 /** Step data for widget-sj-status (no icon; widget uses default by index) */
 export interface SuratJalanDetailStep {
   title: string;
   subtitle?: string;
+  pic?: string;
   progress: SJStatusProgress;
   status?: string;
 }
@@ -61,6 +65,7 @@ export const useSuratJalanDetailStore = create<SuratJalanDetailState>()(
           data?: Array<{
             title: string;
             subtitle?: string;
+            pic?: string;
             progress: string;
             status?: string;
           }>;
@@ -75,6 +80,7 @@ export const useSuratJalanDetailStore = create<SuratJalanDetailState>()(
         const steps: SuratJalanDetailStep[] = raw.map((row) => ({
           title: row.title,
           subtitle: row.subtitle,
+          pic: row.pic,
           progress: isValidProgress(row.progress) ? row.progress : "next",
           ...(row.status ? { status: row.status } : {}),
         }));

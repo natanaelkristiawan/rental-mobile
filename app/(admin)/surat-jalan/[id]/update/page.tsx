@@ -104,8 +104,9 @@ export default function SuratJalanUpdatePage() {
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [signImage, setSignImage] = useState<string | null>(null);
-  const [picId, setPicId] = useState("");
   const [picName, setPicName] = useState("");
+  const [clientName, setClientName] = useState("");
+  const [clientSignImage, setClientSignImage] = useState<string | null>(null);
 
   const { item, loading, error, fetch, steps } = useSuratJalanDetailStore();
 
@@ -119,6 +120,19 @@ export default function SuratJalanUpdatePage() {
     () => getCurrentStatusLabel(steps, item?.status),
     [steps, item?.status]
   );
+  const nextStepPicName = useMemo(() => {
+    const runningIndex = steps.findIndex((s) => s.progress === "running");
+    const nextStep = runningIndex >= 0 ? steps[runningIndex + 1] : steps.find((s) => s.progress === "next");
+    if (!nextStep) return "";
+    return nextStep.pic?.trim() ?? "";
+  }, [steps]);
+
+  useEffect(() => {
+    if (!picName && nextStepPicName) {
+      setPicName(nextStepPicName);
+    }
+  }, [picName, nextStepPicName]);
+
   const enabledActionKeys = useMemo(() => {
     const firstNextStep = steps.find((step) => step.progress === "next");
     if (!firstNextStep) return new Set<string>();
@@ -128,6 +142,14 @@ export default function SuratJalanUpdatePage() {
     );
     return new Set(enabledAction ? [enabledAction.action] : []);
   }, [steps]);
+  const hideDetailSection = enabledActionKeys.has("cek");
+  const showClientSignSection = enabledActionKeys.has("lokasi");
+
+  useEffect(() => {
+    if (showClientSignSection && !clientName && item?.clientName) {
+      setClientName(item.clientName);
+    }
+  }, [showClientSignSection, clientName, item?.clientName]);
 
   const updateStatus = useSuratJalanStore((s) => s.updateStatus);
   const isUpdating = useSuratJalanStore((s) => s.isUpdating);
@@ -151,11 +173,13 @@ export default function SuratJalanUpdatePage() {
     try {
       const selectedAction = selectedIndex !== null ? STATUS_ACTIONS[selectedIndex] : null;
       await updateStatus(referenceId, {
-        picId,
+        picId: "",
         picName,
         statusId: selectedIndex ?? 0,
         action: selectedAction?.action ?? "",
         signImage,
+        clientName: showClientSignSection ? clientName : "",
+        signPenerimaImage: showClientSignSection ? clientSignImage : null,
       });
     } catch {
       // Error and modal handled in store
@@ -239,14 +263,32 @@ export default function SuratJalanUpdatePage() {
         })}
       </div>
 
-      <CardStatusDetail
-        className="mt-8"
-        onSignChange={setSignImage}
-        onPicChange={(id, name) => {
-          setPicId(id);
-          setPicName(name);
-        }}
-      />
+      {!hideDetailSection && (
+        <>
+          <CardStatusDetail
+            className="mt-8"
+            title="Detail PIC"
+            inputId="pic-name"
+            nameLabel="Nama PIC"
+            namePlaceholder="Masukkan nama PIC"
+            picName={picName}
+            onSignChange={setSignImage}
+            onPicNameChange={setPicName}
+          />
+          {showClientSignSection && (
+            <CardStatusDetail
+              className="mt-4"
+              title="Detail Client"
+              inputId="client-name"
+              nameLabel="Nama Client"
+              namePlaceholder="Masukkan nama client"
+              picName={clientName}
+              onSignChange={setClientSignImage}
+              onPicNameChange={setClientName}
+            />
+          )}
+        </>
+      )}
 
       <Button
         type="button"
