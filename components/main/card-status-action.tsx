@@ -30,6 +30,8 @@ export interface CardStatusActionProps {
   icon?: LucideIcon;
   /** Icon circle color variant */
   variant?: CardStatusActionVariant;
+  /** Optional timestamp from server (e.g. when step was completed) */
+  createdAt?: string | null;
   /** When true, card shows a green selected background */
   selected?: boolean;
   /** Called when the card is clicked */
@@ -43,6 +45,7 @@ export function CardStatusAction({
   description,
   icon: Icon = Archive,
   variant = "blue",
+  createdAt,
   selected = false,
   onClick,
   className,
@@ -93,6 +96,9 @@ export function CardStatusAction({
           {description && (
             <p className="mt-0.5 text-sm text-muted-foreground">{description}</p>
           )}
+          {createdAt ? (
+            <p className="mt-1 text-xs text-muted-foreground/80">{createdAt}</p>
+          ) : null}
         </div>
         <ChevronRight
           className="size-5 shrink-0 text-muted-foreground"

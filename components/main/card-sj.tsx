@@ -21,7 +21,8 @@ export interface CardSJProps {
   location: string;
   /** Item count label (e.g. "2 Koli") */
   itemCount: string;
-  /** Called when the card is clicked (e.g. navigate to detail) */
+  /** Created at from server (e.g. YYYY-MM-DD HH:mm:ss) */
+  createdAt?: string | null;
   onClick?: () => void;
   className?: string;
 }
@@ -51,6 +52,7 @@ export function CardSJ({
   clientName,
   location,
   itemCount,
+  createdAt,
   onClick,
   className,
 }: CardSJProps) {
@@ -85,6 +87,11 @@ export function CardSJ({
         <h2 className="mt-1 text-lg font-semibold leading-tight text-foreground">
           {clientName}
         </h2>
+        {createdAt ? (
+          <p className="mt-1 text-xs text-muted-foreground" aria-label="Dibuat">
+            {createdAt}
+          </p>
+        ) : null}
       </CardHeader>
 
       <CardContent className="mt-3 flex flex-col gap-3 p-0">

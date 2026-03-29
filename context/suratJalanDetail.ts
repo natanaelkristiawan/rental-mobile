@@ -21,6 +21,8 @@ export interface SuratJalanDetailStep {
   pic?: string;
   progress: SJStatusProgress;
   status?: string;
+  /** From history API (YYYY-MM-DD HH:mm:ss) */
+  createdAt?: string;
 }
 
 const DEFAULT_STEPS: SuratJalanDetailStep[] = [
@@ -68,6 +70,7 @@ export const useSuratJalanDetailStore = create<SuratJalanDetailState>()(
             pic?: string;
             progress: string;
             status?: string;
+            createdAt?: string;
           }>;
         }>(`/api/mobile/sj/${encodeURIComponent(idStr)}/history`);
 
@@ -83,6 +86,7 @@ export const useSuratJalanDetailStore = create<SuratJalanDetailState>()(
           pic: row.pic,
           progress: isValidProgress(row.progress) ? row.progress : "next",
           ...(row.status ? { status: row.status } : {}),
+          ...(row.createdAt ? { createdAt: row.createdAt } : {}),
         }));
         set({ steps });
       } catch {

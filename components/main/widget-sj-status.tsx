@@ -23,6 +23,8 @@ export interface WidgetSJStatusStep {
   status?: string;
   /** Icon for this step when running or next; finished step always shows check */
   icon?: LucideIcon;
+
+  createdAt?:string|null
 }
 
 const DEFAULT_ICONS: LucideIcon[] = [
@@ -84,7 +86,7 @@ export function WidgetSJStatus({ steps, className }: WidgetSJStatusProps) {
               <div className="d-block">
                 <span
                   className={cn(
-                    "text-sm font-semibold",
+                    "text-sm font-semibold block",
                     step.progress === "next"
                       ? "text-muted-foreground"
                       : "text-foreground"
@@ -92,6 +94,17 @@ export function WidgetSJStatus({ steps, className }: WidgetSJStatusProps) {
                 >
                   {step.title}
                 </span>
+                <span
+                  className={cn(
+                    "text-sm font-semibold block mb-2",
+                    step.progress === "next"
+                      ? "text-muted-foreground"
+                      : "text-foreground"
+                  )}
+                >
+                  {step.createdAt}
+                </span>
+
                 {step.subtitle && (
                 <p
                   className={cn(

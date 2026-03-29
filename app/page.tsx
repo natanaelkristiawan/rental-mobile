@@ -146,6 +146,7 @@ function HomeContent() {
               clientName={item.clientName}
               location={item.location}
               itemCount={item.itemCount}
+              createdAt={item.createdAt ?? undefined}
               onClick={() => router.push(getSuratJalanDetailPath(item.id))}
             />
           ))}

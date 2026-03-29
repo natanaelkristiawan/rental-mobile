@@ -22,6 +22,8 @@ export interface SuratJalanItem {
   location: string;
   itemCount: string;
   statusIcon?: SuratJalanStatusIcon;
+  /** From API `createdAt` (formatted server-side) */
+  createdAt?: string | null;
 }
 
 /** Dummy API response (replace with real fetch when backend is ready) */
