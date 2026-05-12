@@ -17,6 +17,13 @@ export interface CardSJProps {
   referenceId: string;
   /** Client name (e.g. "PT Maju Jaya") */
   clientName: string;
+
+  /*PIC Gudang*/ 
+  picGudang?:string;
+
+  /* PIC Lapangan */
+  picLapangan?:string; 
+
   /** Location (e.g. "Grand Hyatt Bali") */
   location: string;
   /** Item count label (e.g. "2 Koli") */
@@ -50,6 +57,8 @@ export function CardSJ({
   statusIcon: StatusIcon = Package,
   referenceId,
   clientName,
+  picGudang,
+  picLapangan,
   location,
   itemCount,
   createdAt,
@@ -84,9 +93,21 @@ export function CardSJ({
           </span>
         </div>
 
-        <h2 className="mt-1 text-lg font-semibold leading-tight text-foreground">
-          {clientName}
+        <h2 className="mt-1 text-xl font-semibold leading-tight text-foreground">
+         PIC Client - {clientName}
         </h2>
+
+
+        <div className="py-3 px-5 bg-zinc-100 w-full rounded my-3">
+          <h2 className="mt-1 text-md font-normal leading-tight text-foreground">
+          PIC Gudang - {picGudang}
+          </h2>
+          <h2 className="mt-1 text-md font-normal leading-tight text-foreground">
+          PIC Lapangan - {picLapangan}
+          </h2>
+        </div>
+
+
         {createdAt ? (
           <p className="mt-1 text-xs text-muted-foreground" aria-label="Dibuat">
             {createdAt}

@@ -144,6 +144,8 @@ function HomeContent() {
               }
               referenceId={item.referenceId}
               clientName={item.clientName}
+              picGudang={item.picGudang}
+              picLapangan={item.picLapangan}
               location={item.location}
               itemCount={item.itemCount}
               createdAt={item.createdAt ?? undefined}

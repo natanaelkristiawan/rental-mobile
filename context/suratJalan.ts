@@ -19,6 +19,8 @@ export interface SuratJalanItem {
   status: DashboardStatusTitle;
   referenceId: string;
   clientName: string;
+  picGudang?:string;
+  picLapangan?:string;
   location: string;
   itemCount: string;
   statusIcon?: SuratJalanStatusIcon;
