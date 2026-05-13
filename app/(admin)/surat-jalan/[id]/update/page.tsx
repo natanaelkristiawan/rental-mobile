@@ -107,6 +107,10 @@ export default function SuratJalanUpdatePage() {
   const [picName, setPicName] = useState("");
   const [clientName, setClientName] = useState("");
   const [clientSignImage, setClientSignImage] = useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<{
+    pic?: string;
+    client?: string;
+  }>({});
 
   const { item, loading, error, fetch, steps } = useSuratJalanDetailStore();
 
@@ -127,11 +131,13 @@ export default function SuratJalanUpdatePage() {
     return nextStep.pic?.trim() ?? "";
   }, [steps]);
 
+  /** Hydrate default PIC from steps only when empty; do not overwrite after user clears (sync when nextStepPicName changes). */
   useEffect(() => {
-    if (!picName && nextStepPicName) {
-      setPicName(nextStepPicName);
-    }
-  }, [picName, nextStepPicName]);
+    setPicName((prev) => {
+      if (prev !== "") return prev;
+      return nextStepPicName ?? "";
+    });
+  }, [nextStepPicName]);
 
   const enabledActionKeys = useMemo(() => {
     const firstNextStep = steps.find((step) => step.progress === "next");
@@ -146,10 +152,12 @@ export default function SuratJalanUpdatePage() {
   const showClientSignSection = enabledActionKeys.has("lokasi");
 
   useEffect(() => {
-    if (showClientSignSection && !clientName && item?.clientName) {
-      setClientName(item.clientName);
-    }
-  }, [showClientSignSection, clientName, item?.clientName]);
+    if (!showClientSignSection || !item?.clientName) return;
+    setClientName((prev) => {
+      if (prev !== "") return prev;
+      return item.clientName ?? "";
+    });
+  }, [showClientSignSection, item?.clientName]);
 
   const updateStatus = useSuratJalanStore((s) => s.updateStatus);
   const isUpdating = useSuratJalanStore((s) => s.isUpdating);
@@ -194,6 +202,18 @@ export default function SuratJalanUpdatePage() {
     ) {
       return;
     }
+    const nextErrors: { pic?: string; client?: string } = {};
+    if (!hideDetailSection && !picName.trim()) {
+      nextErrors.pic = "Nama PIC tidak boleh kosong.";
+    }
+    if (showClientSignSection && !clientName.trim()) {
+      nextErrors.client = "Nama client tidak boleh kosong.";
+    }
+    if (Object.keys(nextErrors).length > 0) {
+      setFieldErrors(nextErrors);
+      return;
+    }
+    setFieldErrors({});
     setConfirmOpen(true);
   }
 
@@ -273,7 +293,13 @@ export default function SuratJalanUpdatePage() {
             namePlaceholder="Masukkan nama PIC"
             picName={picName}
             onSignChange={setSignImage}
-            onPicNameChange={setPicName}
+            onPicNameChange={(value) => {
+              setPicName(value);
+              setFieldErrors((e) =>
+                e.pic ? { ...e, pic: undefined } : e
+              );
+            }}
+            errorMessage={fieldErrors.pic}
           />
           {showClientSignSection && (
             <CardStatusDetail
@@ -284,7 +310,13 @@ export default function SuratJalanUpdatePage() {
               namePlaceholder="Masukkan nama client"
               picName={clientName}
               onSignChange={setClientSignImage}
-              onPicNameChange={setClientName}
+              onPicNameChange={(value) => {
+                setClientName(value);
+                setFieldErrors((e) =>
+                  e.client ? { ...e, client: undefined } : e
+                );
+              }}
+              errorMessage={fieldErrors.client}
             />
           )}
         </>

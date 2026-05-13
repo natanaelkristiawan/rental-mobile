@@ -16,6 +16,8 @@ export interface CardStatusDetailProps {
   onSignChange?: (dataUrl: string | null) => void;
   /** Called whenever PIC text changes */
   onPicNameChange?: (picName: string) => void;
+  /** Shown below the name field (e.g. validation after submit attempt) */
+  errorMessage?: string;
 }
 
 export function CardStatusDetail({
@@ -27,6 +29,7 @@ export function CardStatusDetail({
   picName = "",
   onSignChange,
   onPicNameChange,
+  errorMessage,
 }: CardStatusDetailProps) {
   return (
     <Card
@@ -46,8 +49,14 @@ export function CardStatusDetail({
             type="text"
             placeholder={namePlaceholder}
             value={picName}
+            aria-invalid={Boolean(errorMessage)}
             onChange={(e) => onPicNameChange?.(e.target.value)}
           />
+          {errorMessage ? (
+            <p className="text-sm text-destructive" role="alert">
+              {errorMessage}
+            </p>
+          ) : null}
         </div>
         <Sign height={200} className="pt-2" onChange={onSignChange} />
       </CardContent>
