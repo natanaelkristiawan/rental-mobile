@@ -126,10 +126,19 @@ export default function SuratJalanUpdatePage() {
   );
   const nextStepPicName = useMemo(() => {
     const runningIndex = steps.findIndex((s) => s.progress === "running");
-    const nextStep = runningIndex >= 0 ? steps[runningIndex + 1] : steps.find((s) => s.progress === "next");
+    const nextStep =
+      runningIndex >= 0 ? steps[runningIndex + 1] : steps.find((s) => s.progress === "next");
     if (!nextStep) return "";
-    return nextStep.pic?.trim() ?? "";
-  }, [steps]);
+    const fromStepRaw = nextStep.pic?.trim() ?? "";
+    const fromStep = fromStepRaw === "-" ? "" : fromStepRaw;
+    if (nextStep.title === "Diterima Di Lokasi" || nextStep.title === "Kembali ke Gudang") {
+      return (item?.pic_lapangan?.trim() ?? "") || fromStep;
+    }
+    if (nextStep.title === "Barang Dikirim" || nextStep.title === "Verifikasi & Update Stok") {
+      return (item?.pic_name?.trim() ?? "") || fromStep;
+    }
+    return fromStep;
+  }, [steps, item?.pic_lapangan, item?.pic_name]);
 
   /** Hydrate default PIC from steps only when empty; do not overwrite after user clears (sync when nextStepPicName changes). */
   useEffect(() => {
